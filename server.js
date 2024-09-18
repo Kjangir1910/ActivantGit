@@ -45,18 +45,62 @@ app.post('/api/users', async (req, res) => {
         res.status(400).json({error: 'unable to save user'})
     }
 })
+  
 
 
 // Get users
-app.get('/api/users', async (req, res) => {
-    try {
-        const users = await User.find()
-        res.json(users)
-    } catch (error) {
-        res.status(500).json({error: "Unable to fetch users"})
-    }
-})
+// app.get('/api/users', async (req, res) => {
+//     try {
+//         const users = await User.find()
+//         res.json(users)
+//     } catch (error) {
+//         res.status(500).json({error: "Unable to fetch users"})
+//     }
+// })
 
+// Pagination
+// app.get('/api/users', async (req, res) => {
+//     const {page = 1, limit = 5} = req.query
+//     try {
+//         const pageNum = parseInt(page)
+//         const limitNum = parseInt(limit)
+
+//         const users = await user.find().limit(limitNum).skip((pageNum - 1) * limitNum)
+//         const totalUsers = await User.countDocuments()
+//         res.json({
+//             users, totalPages: Math.ceil(totalUsers/ limitNum),
+//            currentPage: pageNum 
+//         })
+//     } catch (error) {
+//         res.status(500).json({error: 'Unable to fetch users'})
+//     }
+// })
+
+app.get('/api/users', async (req, res) => {
+    const { page = 1, limit = 5 } = req.query;
+  
+    try {
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+  
+      const users = await User.find()
+                              .limit(limitNum)
+                              .skip((pageNum - 1) * limitNum);
+  
+      const totalUsers = await User.countDocuments();
+  
+      res.json({
+        users,
+        totalPages: Math.ceil(totalUsers / limitNum),
+        currentPage: pageNum,
+      });
+    } catch (error) {
+      console.error('Error fetching users:', error);  
+      res.status(500).json({ error: 'Unable to fetch users' });
+    }
+  });
+  
+// Delete user
 app.delete('/api/users/:id', async (req, res) => {
     try {
         const {id} = req.params
@@ -67,7 +111,7 @@ app.delete('/api/users/:id', async (req, res) => {
     }
 })
 
-// Delete user
+
 // app.delete('/api/users/:id', async (req, res) => {
 //     const { id } = req.params; 
 //     try {
@@ -82,20 +126,26 @@ app.delete('/api/users/:id', async (req, res) => {
 //   });
 
 // Update user
-app.put('/api/users/;id', async (req, res) => {
-    const {id} = req.params
-    const {name, email, address} = req.body
+app.put('/api/users/:id', async (req, res) => {
+    const { id } = req.params; 
+    const { name, email, address } = req.body; 
+
     try {
-        const updatedUser = await User.findByIdAndUpdate(id, {name, email, address}, {new: true}) 
-        if(!updatedUser) {
-            return res.status(404).json({error: 'User not found'})
+        const updatedUser = await User.findByIdAndUpdate(id, { name, email, address }, { new: true });
+        if (!updatedUser) {
+            return res.status(404).json({ error: 'User not found' });
         }
-        res.status(200).json(updatedUser)
+        res.status(200).json(updatedUser);
     } catch (error) {
-        res.status(500).json({error: 'Unable to update user'})
+        res.status(500).json({ error: 'Unable to update user' });
     }
-})
-  
+});
+
+
+
+
+
+
 
 // Server
 const PORT = process.env.port || 5000
